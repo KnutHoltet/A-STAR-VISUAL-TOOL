@@ -79,7 +79,21 @@ class Spot:
     pygame.draw.rect(win, self.farge, (self.x, self.y, self.width, self.width))
   
   def update_naboer(self, grid):
-    pass
+    #legge til alle de gyldige naboene til
+    self.naboer = []
+    #foest sjekke om jeg kan gaa ned, ved and, 
+    #append den neste raden ned
+    if self._rad < self._totale_rader - 1 and not grid[self._rad + 1][self._kol].is_barrier(): #Ned
+      self.naboer.append(grid[self._rad + 1][self._kol])
+
+    if self._rad > 0 and not grid[self._rad - 1][self._kol].is_barrier(): #Opp
+      self.naboer.append(grid[self._rad - 1][self._kol])
+
+    if self._kol < self._totale_rader - 1 and not grid[self._rad][self._kol - 1].is_barrier(): #Hoeyre
+      self.naboer.append(grid[self._rad][self._kol + 1])
+
+    if self._kol > 0 and not grid[self._rad][self._kol - 1 ].is_barrier(): #Venstre
+      self.naboer.append(grid[self._rad - 1][self._kol - 1])
 
   def __lt__(self, other):
     return False
@@ -91,6 +105,16 @@ def h(p1, p2):
   x1, y1 = p1
   x2, y2 = p2
   return abs( x1 - x2) + abs(y1 - y2)
+
+def algorithm(draw, grid, start, end):
+  count = 0 #fscore
+  open_set = PriorityQueue
+  open_set.put((0, count, start))
+  came_from = {}
+  g_score = {spot: float("inf") for rad in grid for spot in rad} #noekkel for hver sp
+  g_score[start] = 0
+  f_score = {spot: float("inf") for rad in grid for spot in rad} #noekkel for hver sp
+  f_score[start] = 0
 
 #liste som holder alle punktene i griden min
 #Lager gridden
@@ -144,7 +168,7 @@ def get_clicked_pos(pos, rad, width):
   return rad, kol
 
 def main(win, width):
-  RAD = 100 
+  RAD = 50 
   grid = make_grid(RAD, width)
 
   start = None
@@ -188,8 +212,14 @@ def main(win, width):
         if spot == end:
           end = None
 
-
-
+      if event.type == pygame.KEYDOWN: #spacebar
+        if event.key == pygame.K_SPACE and not started:
+          for rad in grid:
+            for spot in rad:
+              spot.update_naboer()
+            
+          algorithm(lambda: draw(win, grid, RAD, width), grid, start, end)
+  
   pygame.quit()
 
 main(WIN, WIDTH)
